@@ -16,6 +16,6 @@ RUN chmod +x docker-entrypoint.sh
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=5s --timeout=3s CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+HEALTHCHECK --interval=5s --timeout=3s CMD wget --no-verbose --tries=3 --spider http://localhost:7000/health || exit 1
 ENTRYPOINT ["/home/adda-tcc/app/docker-entrypoint.sh"]
 CMD ["/home/adda-tcc/app/api"]
