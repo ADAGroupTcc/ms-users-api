@@ -9,7 +9,7 @@ import (
 func SetupRouter(dependencies *config.Dependencies) *echo.Echo {
 	e := echo.New()
 
-	e.GET("/health", dependencies.HealthHandler.Check, middlewares.ErrorIntercepter())
+	e.GET("/health", dependencies.HealthHandler.Check)
 
 	v1 := e.Group("/v1")
 	v1.POST("/users", dependencies.Handler.Create, middlewares.ErrorIntercepter())

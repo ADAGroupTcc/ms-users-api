@@ -1,6 +1,8 @@
 package exceptions
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type ErrorResponse struct {
 	Code    int    `json:"code"`

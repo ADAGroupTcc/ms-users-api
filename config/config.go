@@ -7,7 +7,7 @@ import (
 
 // Environments define the environment variables
 type Environments struct {
-	ApiPort string `envconfig:"PORT" default:"8081"`
+	ApiPort string `envconfig:"PORT" default:"8082"`
 
 	DBUri  string `envconfig:"MONGODB_URI"`
 	DBName string `envconfig:"MONGODB_DBNAME"`
