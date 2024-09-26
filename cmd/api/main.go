@@ -5,6 +5,7 @@ import (
 
 	"github.com/ADAGroupTcc/ms-users-api/config"
 	"github.com/ADAGroupTcc/ms-users-api/internal/http/router"
+	"github.com/ADAGroupTcc/ms-users-api/pkg/start"
 )
 
 func main() {
@@ -15,8 +16,7 @@ func main() {
 	}
 	dependencies := config.NewDependencies(ctx, envs)
 	e := router.SetupRouter(dependencies)
-	err = e.Start(":" + envs.ApiPort)
-	if err != nil {
+	if err := start.StartServer(e, envs.ApiPort, dependencies.Database); err != nil {
 		panic(err)
 	}
 }

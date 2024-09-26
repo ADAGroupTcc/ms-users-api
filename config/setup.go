@@ -9,11 +9,13 @@ import (
 	healthService "github.com/ADAGroupTcc/ms-users-api/internal/services/health"
 	service "github.com/ADAGroupTcc/ms-users-api/internal/services/users"
 	"github.com/ADAGroupTcc/ms-users-api/pkg/mongorm"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Dependencies struct {
 	Handler       handler.Handler
 	HealthHandler health.Health
+	Database      *mongo.Database
 }
 
 func NewDependencies(ctx context.Context, envs *Environments) *Dependencies {
@@ -30,5 +32,6 @@ func NewDependencies(ctx context.Context, envs *Environments) *Dependencies {
 	return &Dependencies{
 		userHandler,
 		healthHandler,
+		database,
 	}
 }
