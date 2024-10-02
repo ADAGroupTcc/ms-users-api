@@ -32,7 +32,7 @@ jobs:
       run: go test ./...
 
     - name: Build Go application
-      run: go build -o app .
+      run: go build -o cmd/api .
 
   docker:
     needs: build
