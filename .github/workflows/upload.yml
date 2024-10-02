@@ -1,0 +1,72 @@
+name: Build, Test, and Push to Docker Hub
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Build Go application
+      run: go build -o app .
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO_NAME }}:${{ github.ref_name }} .
+        docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO_NAME }}:${{ github.ref_name }}
+
+    - name: Post DockerHub release summary
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const tag = context.ref.replace('refs/tags/', '');
+          const body = `Docker image for \`${tag}\` available at: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO_NAME }}/tags`;
+          github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: tag,
+            name: tag,
+            body: body,
+            draft: false,
+            prerelease: false
+          });
