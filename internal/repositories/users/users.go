@@ -34,17 +34,15 @@ func New(db *mongo.Database) Repository {
 func (h *userRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
 	filter := bson.M{"email": user.Email, "cpf": user.CPF}
 	err := user.Read(ctx, h.db, USER_COLLECTION, filter, user)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			err = user.Create(ctx, h.db, USER_COLLECTION, user)
-			if err != nil {
-				return nil, exceptions.New(exceptions.ErrDatabaseFailure, err)
-			}
-			return user, nil
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		err = user.Create(ctx, h.db, USER_COLLECTION, user)
+		if err != nil {
+			return nil, exceptions.New(exceptions.ErrDatabaseFailure, err)
 		}
+		return user, nil
 	}
 
-	return nil, exceptions.New(exceptions.ErrUserAlreadyExists, err)
+	return user, nil
 }
 
 func (h *userRepository) Get(ctx context.Context, id primitive.ObjectID) (*domain.User, error) {
