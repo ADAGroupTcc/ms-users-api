@@ -27,6 +27,7 @@ var (
 	ErrInvalidCategories = &Exception{Err: errors.New("invalid categories"), Code: 400, Prefix: prefix}
 	ErrUserAlreadyExists = &Exception{Err: errors.New("user already exists"), Code: 400, Prefix: prefix}
 	ErrInvalidID         = &Exception{Err: errors.New("invalid ID"), Code: 400, Prefix: prefix}
+	ErrInvalidLocation   = &Exception{Err: errors.New("invalid location"), Code: 400, Prefix: prefix}
 
 	// Database related errors
 	ErrUserNotFound    = &Exception{Err: errors.New("user not found"), Code: 404, Prefix: prefix}

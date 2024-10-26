@@ -18,6 +18,7 @@ type User struct {
 	Nickname      string               `json:"nickname" bson:"nickname"`
 	Email         string               `json:"email" bson:"email"`
 	CPF           string               `json:"cpf" bson:"cpf"`
+	Location      []float64            `json:"location" bson:"location"`
 	Categories    []primitive.ObjectID `json:"categories" bson:"categories"`
 	IsDenunciated bool                 `json:"is_denunciated" bson:"is_denunciated"`
 }
@@ -40,13 +41,14 @@ type UserResponse struct {
 }
 
 type UserRequest struct {
-	FirstName   string   `json:"first_name"`
-	LastName    string   `json:"last_name"`
-	Description string   `json:"description,omitempty"`
-	Nickname    *string  `json:"nickname"`
-	Email       string   `json:"email"`
-	CPF         string   `json:"cpf"`
-	Categories  []string `json:"categories"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Description string    `json:"description,omitempty"`
+	Nickname    *string   `json:"nickname"`
+	Email       string    `json:"email"`
+	CPF         string    `json:"cpf"`
+	Location    []float64 `json:"location"`
+	Categories  []string  `json:"categories"`
 }
 
 func (u *UserRequest) Validate() error {
@@ -64,15 +66,22 @@ func (u *UserRequest) Validate() error {
 	if len(u.CPF) != 11 {
 		return exceptions.New(exceptions.ErrInvalidCPF, nil)
 	}
+
 	if len(u.Categories) < 3 {
 		return exceptions.New(exceptions.ErrInvalidCategories, nil)
 	}
+
 	for _, category := range u.Categories {
 		_, err := primitive.ObjectIDFromHex(category)
 		if err != nil {
 			return exceptions.New(exceptions.ErrInvalidCategories, nil)
 		}
 	}
+
+	if len(u.Location) != 2 {
+		return exceptions.New(exceptions.ErrInvalidLocation, nil)
+	}
+
 	return nil
 }
 
@@ -95,6 +104,7 @@ func (u *UserRequest) ToUser() *User {
 		Email:         u.Email,
 		CPF:           u.CPF,
 		Categories:    categories,
+		Location:      u.Location,
 		IsDenunciated: false,
 	}
 }
