@@ -46,8 +46,8 @@ func (u *UserRequest) Validate() error {
 	if err != nil || !match {
 		return exceptions.New(exceptions.ErrInvalidEmail, nil)
 	}
-	match, err = regexp.MatchString("^[0-9]{3}.[0-9]{3}.[0-9]{3}-[0-9]{2}$", u.CPF)
-	if err != nil || !match {
+
+	if len(u.CPF) != 11 {
 		return exceptions.New(exceptions.ErrInvalidCPF, nil)
 	}
 
