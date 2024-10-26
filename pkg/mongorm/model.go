@@ -65,6 +65,20 @@ func List(ctx context.Context, db *mongo.Database, collectionName string, filter
 	return nil
 }
 
+func Aggregate(ctx context.Context, db *mongo.Database, collectionName string, pipeline mongo.Pipeline, results interface{}, opts ...*options.AggregateOptions) error {
+	collection := db.Collection(collectionName)
+
+	cursor, err := collection.Aggregate(ctx, pipeline, opts...)
+	if err != nil {
+		return err
+	}
+
+	if err = cursor.All(ctx, results); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *Model) Update(ctx context.Context, db *mongo.Database, collectionName string, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) error {
 	collection := db.Collection(collectionName)
 

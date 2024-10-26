@@ -13,12 +13,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const USER_COLLECTION = "users"
+const (
+	USER_COLLECTION       = "users"
+	CATEGORIES_COLLECTION = "categories"
+)
 
 type Repository interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id primitive.ObjectID) (*domain.User, error)
 	List(ctx context.Context, userIds []primitive.ObjectID, limit int64, offset int64) ([]*domain.User, error)
+	Aggregate(ctx context.Context, userIds []primitive.ObjectID) ([]*domain.UserWithCategories, error)
 	Update(ctx context.Context, id primitive.ObjectID, fields bson.M) error
 	Delete(ctx context.Context, id primitive.ObjectID) error
 }
@@ -73,6 +77,34 @@ func (h *userRepository) List(ctx context.Context, userIds []primitive.ObjectID,
 		}
 		return nil, exceptions.New(exceptions.ErrDatabaseFailure, err)
 	}
+	return users, nil
+}
+
+func (h *userRepository) Aggregate(ctx context.Context, userIds []primitive.ObjectID) ([]*domain.UserWithCategories, error) {
+	var users []*domain.UserWithCategories = make([]*domain.UserWithCategories, 0)
+	var filter bson.M = bson.M{}
+	if len(userIds) > 0 {
+		filter = bson.M{"_id": bson.M{"$in": userIds}}
+	}
+
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: filter}},
+		{{Key: "$lookup", Value: bson.M{
+			"from":         CATEGORIES_COLLECTION,
+			"localField":   "categories",
+			"foreignField": "_id",
+			"as":           "categories",
+		}}},
+	}
+
+	err := mongorm.Aggregate(ctx, h.db, USER_COLLECTION, pipeline, &users)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return users, nil
+		}
+		return nil, exceptions.New(exceptions.ErrDatabaseFailure, err)
+	}
+
 	return users, nil
 }
 

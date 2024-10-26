@@ -65,7 +65,15 @@ func (h *userHandler) List(c echo.Context) error {
 		return exceptions.New(exceptions.ErrInvalidPayload, err)
 	}
 
-	users, err := h.userService.List(ctx, queryParams)
+	if queryParams.ShowCategories {
+		users, err := h.userService.ListWithCategories(ctx, queryParams.UserIDs)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, users)
+	}
+
+	users, err := h.userService.List(ctx, queryParams.UserIDs, queryParams.Limit, queryParams.Offset)
 	if err != nil {
 		return err
 	}

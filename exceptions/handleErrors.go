@@ -1,8 +1,6 @@
 package exceptions
 
-import (
-	"net/http"
-)
+import "fmt"
 
 type ErrorResponse struct {
 	Code    int    `json:"code"`
@@ -10,46 +8,18 @@ type ErrorResponse struct {
 }
 
 func HandleExceptions(err error) ErrorResponse {
-	customErr, ok := err.(*Error)
+	internalErr, ok := err.(*Error)
 	if !ok {
 		return ErrorResponse{
 			Code:    500,
 			Message: "Internal server error",
 		}
 	}
+	fmt.Println(internalErr.Error())
 
-	switch customErr.Err {
-	case ErrUserNotFound:
-		return ErrorResponse{
-			Code:    http.StatusNotFound,
-			Message: customErr.Err.Error(),
-		}
-	case ErrInvalidPayload:
-		return ErrorResponse{
-			Code:    http.StatusUnprocessableEntity,
-			Message: customErr.Err.Error(),
-		}
-	case
-		ErrInvalidFirstName,
-		ErrInvalidLastName,
-		ErrInvalidEmail,
-		ErrInvalidCPF,
-		ErrInvalidCategories,
-		ErrUserAlreadyExists,
-		ErrInvalidID:
-		return ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: customErr.Err.Error(),
-		}
-	case ErrDatabaseFailure:
-		return ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: customErr.Err.Error(),
-		}
-	default:
-		return ErrorResponse{
-			Code:    500,
-			Message: "Internal server error",
-		}
+	parsedErr := internalErr.Err.(*Exception)
+	return ErrorResponse{
+		Code:    parsedErr.Code,
+		Message: internalErr.Err.Error(),
 	}
 }
