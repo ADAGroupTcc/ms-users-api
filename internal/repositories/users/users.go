@@ -36,7 +36,12 @@ func New(db *mongo.Database) Repository {
 }
 
 func (h *userRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
-	filter := bson.M{"email": user.Email, "cpf": user.CPF}
+	filter := bson.M{
+		"$or": []bson.M{
+			{"email": user.Email},
+			{"cpf": user.CPF},
+		},
+	}
 	err := user.Read(ctx, h.db, USER_COLLECTION, filter, user)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		err = user.Create(ctx, h.db, USER_COLLECTION, user)
