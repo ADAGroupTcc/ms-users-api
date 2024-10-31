@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	Create(ctx context.Context, request domain.UserRequest) (*domain.User, error)
+	Create(ctx context.Context, request domain.UserRequest) (*domain.UserWithCategories, error)
 	Get(ctx context.Context, id string) (*domain.User, error)
 	List(ctx context.Context, userIds []string, limit int64, offset int64) (*domain.UserResponse, error)
 	ListWithCategories(ctx context.Context, userIds []string) ([]*domain.UserWithCategories, error)
@@ -28,7 +28,7 @@ func New(userRepository users.Repository) Service {
 	}
 }
 
-func (h *userService) Create(ctx context.Context, request domain.UserRequest) (*domain.User, error) {
+func (h *userService) Create(ctx context.Context, request domain.UserRequest) (*domain.UserWithCategories, error) {
 	err := request.Validate()
 	if err != nil {
 		return nil, err
@@ -36,7 +36,21 @@ func (h *userService) Create(ctx context.Context, request domain.UserRequest) (*
 
 	user := request.ToUser()
 
-	return h.userRepository.Create(ctx, user)
+	user, err = h.userRepository.Create(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	userWithCategory, err := h.userRepository.Aggregate(ctx, []primitive.ObjectID{user.ID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(userWithCategory) < 1 {
+		return nil, exceptions.New(exceptions.ErrDatabaseFailure, err)
+	}
+
+	return userWithCategory[0], err
 }
 
 func (h *userService) Get(ctx context.Context, id string) (*domain.User, error) {
