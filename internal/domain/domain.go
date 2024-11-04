@@ -87,7 +87,7 @@ func (u *UserRequest) Validate() error {
 }
 
 func (u *UserRequest) ToUser() *User {
-	if u.Nickname == nil {
+	if u.Nickname == nil || len(*u.Nickname) < 1 {
 		newNickname := fmt.Sprintf("%s%s", u.FirstName, u.LastName)
 		newNickname = strings.ToLower(newNickname)
 		u.Nickname = &newNickname
