@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/ADAGroupTcc/ms-users-api/exceptions"
 	"github.com/ADAGroupTcc/ms-users-api/pkg/mongorm"
@@ -87,7 +88,8 @@ func (u *UserRequest) Validate() error {
 
 func (u *UserRequest) ToUser() *User {
 	if u.Nickname == nil {
-		newNickname := fmt.Sprintf("%s %s", u.FirstName, u.LastName)
+		newNickname := fmt.Sprintf("%s%s", u.FirstName, u.LastName)
+		newNickname = strings.ToLower(newNickname)
 		u.Nickname = &newNickname
 	}
 
